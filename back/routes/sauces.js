@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/auth');
+const sauceCtrl = require('../controllers/sauces');
 const saucesPiq = require('../models/sauces');
 
-router.post('/', (req, res, next) => {
+router.post('/', auth, multer, sauceCtrl.createSauce)
+
+router.post('/', (req, res, next ) => {
     delete req.body._id;
     const sauce = new saucesPiq({
       ...req.body
