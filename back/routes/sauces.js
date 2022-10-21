@@ -3,8 +3,10 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const multer = require('../middleware/multer-config');
 const sauceCtrl = require('../controllers/sauces');
-const saucesPiq = require('../models/sauces');
 
-//router.post('/', auth, multer, sauceCtrl.createSauce)//
+
+router.post('/', auth, multer, sauceCtrl.createSauce);
+router.get('/', auth, sauceCtrl.getSauces);
+router.get('/:id', auth, sauceCtrl.getOneSauce);
 
 module.exports = router;
