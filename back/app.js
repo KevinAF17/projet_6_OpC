@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const saucesRoads = require('./routes/sauces');
 const userRoads = require('./routes/users');
 
-
 const app = express();
 
 mongoose.connect('mongodb+srv://KevinAF4:Clust3r-0pC6@clusterp6.yrwj1f0.mongodb.net/?retryWrites=true&w=majority',
