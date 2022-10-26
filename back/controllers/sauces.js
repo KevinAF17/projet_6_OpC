@@ -2,7 +2,7 @@ const hotSauce = require('../models/sauces');
 const fs = require('fs');
 
 
-exports.getSauces = (req, res, next) => {
+exports.getAllSauces = (req, res, next) => {
   Sauce.find()
   .then((sauces) => res.status(200).json(sauces))
   .catch(error => res.status(400).json({error}))
@@ -27,11 +27,11 @@ exports.createSauce = (req, res, next) => {
       .catch(error => res.status(400).json({ error }));
   }
 
-exports.delete = (req, res) => {
+exports.deleteSauce = (req, res) => {
     Sauce.findOne({ _id: req.params.id })
         .then(sauce => {
             if (sauce.userId != req.userId) {
-                res.status(401).json({ message: 'Suppression impossible : Non autorisation' })
+                res.status(401).json({ message: 'Autorisation refusée !' })
             } else {
                 const filename = sauce.imageUrl.split('/images/')[1];
                 fs.unlink(`images/${filename}`, () => {
@@ -45,3 +45,25 @@ exports.delete = (req, res) => {
             res.status(500).json(error);
         });
 }
+
+exports.modifySauce = (req, res, next) => {
+  const sauceObject = req.file ? {
+      ...JSON.parse(req.body.thing),
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  } : { ...req.body };
+
+  delete sauceObject._userId;
+  Sauce.findOne({_id: req.params.id})
+      .then((sauce) => {
+          if (sauce.userId != req.auth.userId) {
+              res.status(401).json({ message : 'Not authorized'});
+          } else {
+              Thing.updateOne({ _id: req.params.id}, { ...SauceObject, _id: req.params.id})
+              .then(() => res.status(200).json({message : 'Objet modifié!'}))
+              .catch(error => res.status(401).json({ error }));
+          }
+      })
+      .catch((error) => {
+          res.status(400).json({ error });
+      });
+};
