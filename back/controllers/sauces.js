@@ -21,7 +21,11 @@ exports.createSauce = (req, res, next) => {
     const sauce = new hotSauce({
       ...sauceObject,
       userId: req.auth.userId,
-      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+      likes: 0,
+      dislikes: 0,
+      usersLiked: [],
+      usersDisliked: [],
     });
     sauce.save()
       .then(() => res.status(201).json({ message: 'Nouvelle sauce enregistrée !'}))
@@ -35,9 +39,7 @@ exports.deleteSauce = (req, res, next) => {
       }
       if (sauce.userId !== req.auth.userId) {
         res.status(401).json({
-        error: new Error(
-            "Vous n'êtes pas le propriétaire de cette sauce."
-        ),
+        error: new Error("Vous n'êtes pas le propriétaire de cette sauce !"),
         });
       }
       const filename = sauce.imageUrl.split("/images/")[1];
@@ -62,7 +64,7 @@ exports.modifySauce = (req, res, next) => {
               res.status(401).json({ message : 'Not authorized'});
           } else {
               hotSauce.updateOne({ _id: req.params.id}, { ...sauceObject, _id: req.params.id})
-              .then(() => res.status(200).json({message : 'Objet modifié!'}))
+              .then(() => res.status(200).json({message : 'Détails modifiés!'}))
               .catch(error => res.status(401).json({ error }));
           }
       })
@@ -70,3 +72,60 @@ exports.modifySauce = (req, res, next) => {
           res.status(400).json({ error });
       });
 };
+
+exports.likeDislikeSauce = (req, res, next) => {
+    // On récupère la sauce
+    hotSauce.findOne({ _id: req.params.id })
+        .then(sauce => {
+           switch (req.body.like) {
+                //Si l'utilisateur dislike
+                case -1:
+                    hotSauce.updateOne({ _id: req.params.id }, {
+                        $inc: { dislikes: 1 },
+                        $push: { usersDisliked: req.body.userId },
+                        _id: req.params.id
+                    })
+                        .then(() => res.status(201).json({ message: 'Sauce dislikée' }))
+                        .catch(error => res.status(400).json({ error }))
+                    break;
+
+                //Si sauce déja likée, on retire le like
+                case 0:
+                    if (sauce.usersLiked.find(user => user === req.body.userId)) {
+                        hotSauce.updateOne({ _id: req.params.id }, {
+                            $inc: { likes: -1 },
+                            $pull: { usersLiked: req.body.userId },
+                            _id: req.params.id
+                        })
+                            .then(() => res.status(201).json({ message: 'Like retiré !' }))
+                            .catch(error => res.status(400).json({ error }))
+                    }
+
+                    //Si la sauce est déjà disliké, on retire le dislike
+                    if (sauce.usersDisliked.find(user => user === req.body.userId)) {
+                        hotSauce.updateOne({ _id: req.params.id }, {
+                            $inc: { dislikes: -1 },
+                            $pull: { usersDisliked: req.body.userId },
+                            _id: req.params.id
+                        })
+                            .then(() => res.status(201).json({ message: ' Dislike retiré !' }))
+                            .catch(error => res.status(400).json({ error }));
+                    }
+                    break;
+
+                //Si l'utilisateur like la sauce, +1
+                case 1:
+                    hotSauce.updateOne({ _id: req.params.id }, {
+                        $inc: { likes: 1 },
+                        $push: { usersLiked: req.body.userId },
+                        _id: req.params.id
+                    })
+                        .then(() => res.status(201).json({ message: 'Sauce likée !' }))
+                        .catch(error => res.status(400).json({ error }));
+                    break;
+                default:
+                    return res.status(500).json({ error });
+            }
+        })
+        .catch(error => res.status(500).json({ error }))
+}
