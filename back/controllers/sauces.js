@@ -74,7 +74,7 @@ exports.likeDislikeSauce = (req, res) => {
     hotSauce.findOne({ _id: req.params.id })
         .then(sauce => {
            switch (like) {
-                //Si l'utilisateur dislike : 
+                //Si l'utilisateur souhaite disliker
                 case -1:
                     hotSauce.updateOne({ _id: req.params.id }, {
                         $inc: { dislikes: 1 },
@@ -84,8 +84,8 @@ exports.likeDislikeSauce = (req, res) => {
                         .catch(error => res.status(400).json({ error }))
                     break;
 
-                //Si like ou dislike ! de 0, on retire le like / dislike'
                 case 0:
+                    //Si la sauce est déja likée
                     if (sauce.usersLiked.find(user => user === req.body.userId)) {
                         hotSauce.updateOne({ _id: req.params.id }, {
                             $inc: { likes: -1 },
@@ -95,7 +95,7 @@ exports.likeDislikeSauce = (req, res) => {
                             .catch(error => res.status(400).json({ error }))
                     }
 
-                    //Si la sauce est déjà disliké :
+                    //Si la sauce est déjà dislikée
                     if (sauce.usersDisliked.find(user => user === req.body.userId)) {
                         hotSauce.updateOne({ _id: req.params.id }, {
                             $inc: { dislikes: -1 },
@@ -106,7 +106,7 @@ exports.likeDislikeSauce = (req, res) => {
                     }
                     break;
 
-                //Si l'utilisateur like la sauce, +1 :
+                //Si l'utilisateur souhaite liker
                 case 1:
                     hotSauce.updateOne({ _id: req.params.id }, {
                         $inc: { likes: 1 },
