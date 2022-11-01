@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const saucesRoads = require('./routes/sauces');
 const userRoads = require('./routes/users');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 
@@ -13,6 +14,8 @@ mongoose.connect('mongodb+srv://KevinAF4:Clust3r-0pC6@clusterp6.yrwj1f0.mongodb.
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json());
+
+app.use(cors())
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
