@@ -1,4 +1,5 @@
 const express = require('express');
+const helmet = require("helmet");
 const mongoose = require('mongoose');
 const saucesRoads = require('./routes/sauces');
 const userRoads = require('./routes/users');
@@ -13,6 +14,7 @@ mongoose.connect('mongodb+srv://KevinAF4:Clust3r-0pC6@clusterp6.yrwj1f0.mongodb.
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
+app.use(helmet());
 app.use(express.json());
 
 app.use(cors())

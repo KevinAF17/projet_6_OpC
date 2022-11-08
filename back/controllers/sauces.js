@@ -91,6 +91,7 @@ exports.likeDislikeSauce = (req, res) => {
                         hotSauce.updateOne({ _id: req.params.id }, {
                             $inc: { likes: -1 },
                             $pull: { usersLiked: req.body.userId },
+                            _id: req.params.id
                         })
                             .then(() => res.status(201).json({ message: 'Like retiré !' }))
                             .catch(error => res.status(400).json({ error }))
